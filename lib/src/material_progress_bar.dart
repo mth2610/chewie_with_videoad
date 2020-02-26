@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
+import '../chewie.dart';
+
 class MaterialVideoProgressBar extends StatefulWidget {
   MaterialVideoProgressBar(
     this.controller, {
@@ -57,7 +59,9 @@ class _VideoProgressBarState extends State<MaterialVideoProgressBar> {
       final Duration position = controller.value.duration * relative;
       controller.seekTo(position);
     }
-
+    
+    List<int> videoAdLocations = ChewieController.of(context).videoAdLocations;
+    
     return GestureDetector(
       child: Center(
         child: Container(
@@ -68,6 +72,7 @@ class _VideoProgressBarState extends State<MaterialVideoProgressBar> {
             painter: _ProgressBarPainter(
               controller.value,
               widget.colors,
+              videoAdLocations: videoAdLocations
             ),
           ),
         ),
@@ -115,10 +120,11 @@ class _VideoProgressBarState extends State<MaterialVideoProgressBar> {
 }
 
 class _ProgressBarPainter extends CustomPainter {
-  _ProgressBarPainter(this.value, this.colors);
+  _ProgressBarPainter(this.value, this.colors, {this.videoAdLocations});
 
   VideoPlayerValue value;
   ChewieProgressColors colors;
+  List<int> videoAdLocations;
 
   @override
   bool shouldRepaint(CustomPainter painter) {
@@ -128,7 +134,6 @@ class _ProgressBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final height = 2.0;
-
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromPoints(
@@ -142,6 +147,19 @@ class _ProgressBarPainter extends CustomPainter {
     if (!value.initialized) {
       return;
     }
+
+    if(videoAdLocations!=null&&videoAdLocations.length!=0){
+      videoAdLocations.forEach((int location){
+        final double adPartPercent = location*1000 / value.duration.inMilliseconds;
+        final double adPart = adPartPercent > 1 ? size.width : adPartPercent * size.width;
+          canvas.drawCircle(
+          Offset(adPart, size.height / 2 + height / 2),
+          height * 3,
+          colors.playedPaint,
+        );
+      });
+    }
+
     final double playedPartPercent =
         value.position.inMilliseconds / value.duration.inMilliseconds;
     final double playedPart =

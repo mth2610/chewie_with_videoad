@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
+import 'chewie_player.dart';
+
 class CupertinoVideoProgressBar extends StatefulWidget {
   CupertinoVideoProgressBar(
     this.controller, {
@@ -50,6 +52,8 @@ class _VideoProgressBarState extends State<CupertinoVideoProgressBar> {
 
   @override
   Widget build(BuildContext context) {
+    
+
     void seekToRelativePosition(Offset globalPosition) {
       final box = context.findRenderObject() as RenderBox;
       final Offset tapPos = box.globalToLocal(globalPosition);
@@ -57,6 +61,8 @@ class _VideoProgressBarState extends State<CupertinoVideoProgressBar> {
       final Duration position = controller.value.duration * relative;
       controller.seekTo(position);
     }
+
+    List<int> videoAdLocations = ChewieController.of(context).videoAdLocations;
 
     return GestureDetector(
       child: Center(
@@ -115,10 +121,11 @@ class _VideoProgressBarState extends State<CupertinoVideoProgressBar> {
 }
 
 class _ProgressBarPainter extends CustomPainter {
-  _ProgressBarPainter(this.value, this.colors);
+  _ProgressBarPainter(this.value, this.colors, {this.videoAdLocations});
 
   VideoPlayerValue value;
   ChewieProgressColors colors;
+  List<int> videoAdLocations;
 
   @override
   bool shouldRepaint(CustomPainter painter) {
@@ -144,6 +151,20 @@ class _ProgressBarPainter extends CustomPainter {
     if (!value.initialized) {
       return;
     }
+
+    if(videoAdLocations!=null&&videoAdLocations.length!=0){
+      videoAdLocations.forEach((int location){
+        final double adPartPercent = location*1000 / value.duration.inMilliseconds;
+        final double adPart = adPartPercent > 1 ? size.width : adPartPercent * size.width;
+        canvas.drawCircle(
+          Offset(adPart, baseOffset + barHeight / 2),
+          handleHeight,
+          colors.handlePaint,
+        );
+      });
+    }
+
+
     final double playedPartPercent =
         value.position.inMilliseconds / value.duration.inMilliseconds;
     final double playedPart =
