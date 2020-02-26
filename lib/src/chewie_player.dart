@@ -317,7 +317,11 @@ class ChewieController extends ChangeNotifier {
       videoAdLocations.forEach((location){
         videoPlayerController.addListener((){
           if(videoPlayerController.value.position.inSeconds == location){
-            RewardedVideoAd.instance.show();
+            RewardedVideoAd.instance.show().then((isShowed){
+              if(isShowed==true){
+                videoPlayerController.pause();
+              }
+            });
           }
         });
       });
