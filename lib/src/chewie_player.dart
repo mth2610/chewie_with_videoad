@@ -201,6 +201,7 @@ class ChewieController extends ChangeNotifier {
     _initialize();
   }
 
+
   final List<int> videoAdLocations;
 
   /// The controller for the video you want to play
@@ -314,6 +315,15 @@ class ChewieController extends ChangeNotifier {
     }
 
     if(videoAdLocations!=null&&videoAdLocations.length!=0){
+      RewardedVideoAd.instance.listener =
+      (RewardedVideoAdEvent event, {String rewardType, int rewardAmount}) {
+        print(event);
+        print(event.toString());
+        if (event == RewardedVideoAdEvent.closed) {
+        } else if (event == RewardedVideoAdEvent.completed){
+          
+        }
+      };
       videoAdLocations.forEach((location){
         videoPlayerController.addListener((){
           if(videoPlayerController.value.position.inSeconds == location){
@@ -321,6 +331,8 @@ class ChewieController extends ChangeNotifier {
               if(isShowed==true){
                 videoPlayerController.pause();
               }
+            }).whenComplete((){
+              videoPlayerController.play();
             });
           }
         });
